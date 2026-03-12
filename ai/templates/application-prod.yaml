@@ -1,0 +1,16 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+logging:
+  datasource:
+    show-sql: ${SHOW_SQL:false}
+  file:
+    name: ${PATH_FILE:logs/reports-api-prod.log}
+  level:
+    root: ${ROOT_LOG_LEVEL:info}
+    web: ${WEB_LOG_LEVEL:info}
+    'com.prosperapagamentos': ${DEFAULT_LOG_LEVEL:info}
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"

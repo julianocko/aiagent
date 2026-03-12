@@ -1,3 +1,47 @@
 spring:
   application:
-    name: aiagent
+    name: client-api
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: true
+        default_schema: client
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    default-schema: public
+    schemas: client
+    table: flyway_schema_history
+server:
+  port: ${PORT}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+keycloak:
+  realm: prospera
+  client-id: ${CLIENT_ID}
+  issuer-uri: ${ISSUER_URI}
+  jwk-set-uri: ${keycloak.issuer-uri}/protocol/openid-connect/certs
+
+logging:
+  level:
+    root: INFO

@@ -1,0 +1,73 @@
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:${artifactId}}
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:app}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: ${HIBERNATE_FORMAT_SQL:false}
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true}
+    locations: ${FLYWAY_LOCATIONS:classpath:db/migration}
+    default-schema: public
+    create-schemas: false
+    schemas: public
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/master}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:8080/realms/master/protocol/openid-connect/certs}
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${SERVER_CONTEXT_PATH:/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: ${MANAGEMENT_ENDPOINTS_EXPOSURE:health,info,prometheus}
+  endpoint:
+    health:
+      show-details: ${MANAGEMENT_HEALTH_SHOW_DETAILS:never}
+
+springdoc:
+  api-docs:
+    path: ${SPRINGDOC_API_DOCS_PATH:/v3/api-docs}
+  swagger-ui:
+    path: ${SPRINGDOC_SWAGGER_UI_PATH:/swagger-ui.html}
+
+app:
+  security:
+    keycloak:
+      realm: ${KEYCLOAK_REALM:master}
+      client-id: ${KEYCLOAK_CLIENT_ID:api-client}
+      token-uri: ${KEYCLOAK_TOKEN_URI:http://localhost:8080/realms/master/protocol/openid-connect/token}
+      authorization-grant-type: client_credentials
+      client-authentication-method: private_key_jwt
+      signing-algorithm: RS256
+  response:
+    include-request-id: true
+    include-timestamp: true
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
