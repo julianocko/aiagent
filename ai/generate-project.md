@@ -1,18 +1,9 @@
 # generate-project.md
 ## Project Generation Specification
-Version: 1.0
+Version: 1.2
 
 This skill defines how the AI development agent must generate a complete base project
 for a Java 25 + Spring Boot REST API.
-
-All generated artifacts MUST comply with:
-- architecture.md
-- agent.md
-- template-variables.md
-- response contract
-- keycloak security guidelines
-
-If any conflict occurs, architecture.md is the primary source of truth.
 
 ---
 
@@ -20,54 +11,14 @@ If any conflict occurs, architecture.md is the primary source of truth.
 
 Generate a production-ready project foundation, not just isolated files.
 
-The generated project should be ready to receive features and CRUD generation.
-
 ---
 
-# 2. Mandatory Outputs
-
-A generated project MUST include, at minimum:
-
-## Build and root files
-- pom.xml
-- README.md
-- .gitignore
-- optional Dockerfile
-- optional docker-compose.yml
-
-## Source structure
-src/main/java/<basePackage>/
-  common/
-    exception/
-    response/
-    security/
-    config/
-  features/
-
-src/test/java/<basePackage>/
-
-## Resources
-src/main/resources/
-  application.yaml
-  application-dev.yaml
-  application-prod.yaml
-  db/migration/
-
-## Shared cross-cutting artifacts
-- response wrapper
-- global exception handler
-- security base configuration
-- OpenAPI base config
-- requestId/meta support
-
----
-
-# 3. Technology Rules
+# 2. Technology Rules
 
 The generated project MUST use:
 - Java 25
 - Spring Boot
-- PostgreSQL 17.5
+- PostgreSQL latest only
 - Flyway
 - YAML only
 - Keycloak Resource Server
@@ -75,22 +26,53 @@ The generated project MUST use:
 - OpenAPI
 - JUnit 5
 
+The generator MUST NOT create:
+- any configuration for another database
+- any dependency for another database
+- any profile for another database
+- embedded fallback databases such as H2
+
 ---
 
-# 4. Minimum Acceptance Criteria
+# 3. PostgreSQL Rules
+
+The generated project must include:
+- PostgreSQL JDBC driver only
+- Flyway configured only for PostgreSQL
+- datasource YAML configured only for PostgreSQL
+- Docker/Docker Compose examples only for PostgreSQL when generated
+
+The generated project must not include multi-database compatibility.
+
+---
+
+# 4. Identifier Rules
+
+The generated project must establish UUID as the default primary key strategy.
+
+This includes:
+- entities modeled with UUID ids
+- migrations using `UUID PRIMARY KEY DEFAULT uuid_generate_v4()`
+- PostgreSQL extension `uuid-ossp` enabled in migrations when needed
+
+The generator must never use numeric auto-increment primary keys.
+
+---
+
+# 5. Minimum Acceptance Criteria
 
 A generated project is valid only if:
 - it is build-ready
-- shared cross-cutting structures exist
-- YAML config is prepared
 - Flyway is prepared
 - security is prepared
 - OpenAPI is prepared
 - test and coverage infrastructure exists
+- PostgreSQL is the only configured database target
+- UUID is the mandatory primary key strategy
 
 ---
 
-# 5. Final Rule
+# 6. Final Rule
 
 When the user requests "generate project <name>", the agent must generate a usable project foundation,
-not only a pom.xml or a folder tree.
+not only a pom.xml or a folder tree, and it must target PostgreSQL latest exclusively with UUID primary keys by default.
