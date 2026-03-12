@@ -1,176 +1,91 @@
 # architecture.md
 ## REST API Architecture Standard
-Version: 2.2
+Version: 2.3
 
 This document defines the architectural standards used by the AI development agent
 for generating REST APIs using Java 25 and Spring Boot.
 
----
+## Application Configuration
 
-# 1. Core Principles
+The application must use Spring Boot YAML configuration files located in:
 
-All generated code MUST follow:
-- Clean Architecture
-- Domain Driven Design (DDD)
-- SOLID
-- Clean Code
-- TDD
-- Feature-based modular architecture
+src/main/resources
 
-Allowed dependency flow:
-interfaces -> application -> domain
-infrastructure -> domain/application
+The agent must always generate:
 
-Domain must NEVER depend on framework code.
+- application.yaml
+- application-dev.yaml
+- application-staging.yaml
+- application-prod.yaml
 
----
+The base configuration must be defined in application.yaml.
 
-# 2. Technology Stack
+Environment-specific files must override the base configuration using Spring profiles.
 
-The generated project MUST use:
-- Java 25
-- Spring Boot
-- PostgreSQL latest
-- Flyway
-- YAML only
-- Maven
-- Keycloak OAuth2
-- JUnit 5 + Mockito
-- JaCoCo
+## Mandatory Base Configuration
 
-No other database engine is allowed.
+application.yaml must include, at minimum:
 
----
+- application name
+- active profile
+- datasource configuration
+- Flyway configuration
+- server port
+- context path
+- Keycloak resource server configuration
+- Keycloak integration properties used by the application
+- springdoc/OpenAPI paths
+- management endpoint exposure
+- base logging pattern
 
-# 3. Database Policy
+## Datasource Rules
 
-The only supported database is PostgreSQL using the latest available version.
+Datasource configuration must be defined only for PostgreSQL and must include:
 
-The agent MUST NEVER generate:
-- MySQL configuration
-- MariaDB configuration
-- Oracle configuration
-- SQL Server configuration
-- H2 configuration
-- multi-database profiles
-- compatibility code for other databases
+- spring.datasource.url
+- spring.datasource.username
+- spring.datasource.password
+- spring.datasource.driver-class-name=org.postgresql.Driver
 
-All persistence, Flyway migrations, templates, dependencies, YAML configuration,
-and generated artifacts must target PostgreSQL exclusively.
+No configuration for any other database engine may be generated.
 
----
+## Server Rules
 
-# 4. Identifier Policy
+The application port must be configurable in application.yaml using:
 
-All primary keys MUST use UUID.
+- server.port
 
-Rules:
-- every aggregate root and persisted entity must use UUID as the primary identifier
-- database tables must define the primary key column as UUID
-- database tables must use `uuid_generate_v4()` as the default value generator for the primary key
-- Flyway migrations must create the PostgreSQL extension `uuid-ossp` when needed
-- the agent must not generate numeric auto-increment ids such as BIGSERIAL, SERIAL, IDENTITY, or sequence-based defaults for primary keys
+The context path must also be configurable when needed.
+
+## Keycloak Rules
+
+application.yaml must include the configuration necessary for:
+
+- OAuth2 Resource Server JWT validation
+- issuer-uri
+- jwk-set-uri
+- realm
+- client-id
+- token-uri
+- client authentication method private_key_jwt
+- signing algorithm RS256
+
+## Environment Files
+
+application-dev.yaml, application-staging.yaml, and application-prod.yaml must exist.
+
+Environment-specific logging configuration must be defined in those files.
+
+The agent must preserve or follow the environment-specific patterns adopted by the project.
+
+## Flyway Rules
+
+Flyway configuration must be defined in application.yaml and must keep the schema history table in public.
 
 Example:
-- `id UUID PRIMARY KEY DEFAULT uuid_generate_v4()`
 
-This rule is mandatory for all generated entities, persistence models, repository contracts, and migrations.
-
----
-
-# 5. Layer Rules
-
-## Domain
-Contains:
-- entities
-- value objects
-- domain services
-- domain exceptions
-- enums
-- repository interfaces
-
-## Application
-Contains:
-- use cases
-- command/query objects
-- orchestration logic
-
-## Interfaces
-Contains:
-- REST controllers
-- request validation
-- response formatting
-
-## Infrastructure
-Contains:
-- database adapters
-- JPA entities
-- repository implementations
-- external integrations
-- security configuration
-
-Controllers must NEVER expose domain entities.
-Use aggregates/DTOs instead.
-
----
-
-# 6. Lombok Usage
-
-Lombok MUST be used to reduce boilerplate.
-Avoid using @Data in rich domain entities.
-
----
-
-# 7. Enums for Error Messages
-
-All exception messages MUST come from enums.
-No hardcoded error strings are allowed in services or controllers.
-
----
-
-# 8. Security
-
-Authentication MUST be implemented using Keycloak.
-The API acts as a Resource Server.
-Endpoints must enforce authorization using scopes/roles.
-
----
-
-# 9. Response Standard
-
-All successful responses MUST follow the standard envelope.
-Errors MUST follow RFC7807 Problem Details.
-
----
-
-# 10. Persistence
-
-Database: PostgreSQL only, latest version only.
-
-Flyway migrations MUST:
-- follow semantic versioning
-- target PostgreSQL only
-- keep `public.flyway_schema_history`
-- create UUID primary keys with `DEFAULT uuid_generate_v4()`
-
-All migrations must be forward-only and PostgreSQL-specific when necessary.
-
----
-
-# 11. Configuration
-
-All configuration must be written in YAML.
-Datasource configuration must target PostgreSQL only.
-
----
-
-# 12. Agent Compliance
-
-All code generated by the AI agent must comply with:
-- architecture.md
-- enums guidelines
-- lombok guidelines
-- keycloak security guidelines
-- response contract
-
-If a conflict occurs, architecture.md is the primary source of truth.
+spring:
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    default-schema: public

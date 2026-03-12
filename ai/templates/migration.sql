@@ -1,5 +1,4 @@
 -- V1.0.0__create_${entity}_table.sql
--- PostgreSQL only. UUID primary keys are mandatory.
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" SCHEMA public;
 

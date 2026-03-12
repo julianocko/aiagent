@@ -1,7 +1,7 @@
 version: "1.0"
 
 project:
-  basePackage: com.juliano
+  basePackage: com.prospera.api
   artifactId: client-api
   name: Client API
   description: REST API for client management
